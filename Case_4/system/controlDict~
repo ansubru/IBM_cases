@@ -1,0 +1,124 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | foam-extend: Open Source CFD                    |
+|  \\    /   O peration     | Version:     3.2                                |
+|   \\  /    A nd           | Web:         http://www.foam-extend.org         |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      controlDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+application icoFoam;
+
+startFrom       startTime;
+
+startTime       0;
+
+stopAt          endTime;
+
+endTime         100000;
+
+deltaT          50;
+
+// writeControl    timeStep;
+writeControl    runTime;
+
+writeInterval   100;
+
+purgeWrite      0;
+
+writeFormat     ascii;
+
+writePrecision  6;
+
+writeCompression compressed;
+
+timeFormat      general;
+
+timePrecision   6;
+
+runTimeModifiable yes;
+
+adjustTimeStep  no;
+
+maxCo           0.2;
+
+libs (
+"libsimpleFunctionObjects.so"
+"libsimpleSwakFunctionObjects.so"
+"libswakFunctionObjects.so"
+"libimmersedBoundary.so"
+);
+
+//************************************Function objects************************//
+
+functions
+(
+    forces
+    {
+        type               immersedBoundaryForces;
+        functionObjectLibs ("libimmersedBoundaryForceFunctionObject.so");
+
+        outputControl timeStep;
+        outputInterval 1;
+        patches ( ibSphere );
+
+        pName       p;
+        UName       U;
+        rhoName     rhoInf;
+        rhoInf      1;
+
+        log         true;
+        CofR        ( 0 0 0 );
+
+        Aref 0.7854;
+        Uref 1;
+    }
+
+   massFlows 
+   {
+        type  patchExpression;
+        valueType  internalField;
+        outputControlMode  outputTime;
+        outputInterval  50000;
+        patches (
+		in
+		out
+		);
+	expression "phi";
+	accumulations (
+			sum
+		      );
+	verbose  true;
+   }
+
+   massFlowDiff 
+   {
+	type  swakExpression;
+	valueType  patch;
+	patchName  out;
+	outputControlMode  outputTime;
+	outputInterval  50000;
+	verbose  true;
+	patchMF (
+		"inMF{in}=sum(phi);"
+		"outMF{out}=sum(phi);"
+		);
+	variables (
+		"#patchMF;"
+		);
+	expression "(-inMF-outMF)";
+	accumulations (
+		       average
+	              );
+   }
+
+);
+
+// ************************************************************************* //
