@@ -1,0 +1,27 @@
+
+massFlows {
+theTitle "Mass flows";
+expr "Expression massFlows on (.+):  sum=(%f%)";
+type  dynamic;
+idNr 1;
+titles (
+Mass in
+Mass out
+);
+}
+
+massFlowdiff{
+theTitle "Mass flow deficit (in-out)";
+expr "Expression massFlowDiff :  average=(%f%)";
+titles (
+Deficit
+);
+}
+
+
+
+
+
+
+
+
